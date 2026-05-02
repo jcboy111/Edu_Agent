@@ -1,0 +1,228 @@
+{
+  "chapter": "第三章 函数的概念与性质",
+  "knowledge_points": [
+    {
+      "id": "function_basic",
+      "name": "函数的概念",
+      "category": "基础概念",
+      "definition": "设 A、B 是非空的实数集，如果对于集合 A 中的任意一个数 x，按照某种确定的对应关系 f，在集合 B 中都有唯一确定的数 y 和它对应，那么就称 f:A→B 为从集合 A 到集合 B 的一个函数，记作 y=f(x), x∈A",
+      "key_formulas": ["y = f(x)"],
+      "keywords": ["函数", "对应关系", "定义域", "值域"],
+      "prerequisites": [],
+      "related_points": ["interval", "function_representation"]
+    },
+    {
+      "id": "domain",
+      "name": "定义域",
+      "category": "基础概念",
+      "definition": "自变量 x 的取值范围 A 叫做函数的定义域",
+      "key_formulas": ["x ∈ A"],
+      "keywords": ["定义域", "自变量", "取值范围"],
+      "prerequisites": ["function_basic"],
+      "related_points": ["range"]
+    },
+    {
+      "id": "range",
+      "name": "值域",
+      "category": "基础概念",
+      "definition": "函数值的集合 {f(x) | x ∈ A} 叫做函数的值域。值域是集合 B 的子集",
+      "key_formulas": ["{f(x) | x ∈ A}"],
+      "keywords": ["值域", "函数值"],
+      "prerequisites": ["domain"],
+      "related_points": ["domain"]
+    },
+    {
+      "id": "interval",
+      "name": "区间",
+      "category": "基础概念",
+      "definition": "区间是表示数集的一种方式",
+      "key_formulas": [
+        "闭区间 [a,b] = {x | a ≤ x ≤ b}",
+        "开区间 (a,b) = {x | a < x < b}",
+        "半开半闭 [a,b) = {x | a ≤ x < b}"
+      ],
+      "keywords": ["区间", "闭区间", "开区间"],
+      "prerequisites": [],
+      "related_points": ["domain"]
+    },
+    {
+      "id": "function_representation",
+      "name": "函数的表示法",
+      "category": "基础概念",
+      "definition": "函数的三种常用表示法",
+      "key_formulas": ["解析法", "列表法", "图象法"],
+      "keywords": ["表示法", "解析式", "列表", "图象", "分段函数"],
+      "prerequisites": ["function_basic"],
+      "related_points": ["piecewise_function"]
+    },
+    {
+      "id": "piecewise_function",
+      "name": "分段函数",
+      "category": "基础概念",
+      "definition": "分段函数是函数在不同区间有不同解析式的函数",
+      "key_formulas": ["f(x) = { 表达式1, 条件1; 表达式2, 条件2 }"],
+      "keywords": ["分段函数", "分类讨论"],
+      "prerequisites": ["function_representation"],
+      "related_points": ["function_representation"]
+    },
+    {
+      "id": "monotonicity",
+      "name": "单调性",
+      "category": "函数性质",
+      "definition": "如果对于区间 D 上的任意两个数 x1, x2，当 x1 < x2 时，都有 f(x1) < f(x2)，那么称函数在区间 D 上单调递增",
+      "key_formulas": [
+        "增函数: ∀x1,x2∈D, x1<x2 → f(x1)<f(x2)",
+        "减函数: ∀x1,x2∈D, x1<x2 → f(x1)>f(x2)"
+      ],
+      "keywords": ["单调性", "增函数", "减函数", "递增", "递减", "单调区间"],
+      "prerequisites": ["function_basic", "domain"],
+      "related_points": ["max_min_value"]
+    },
+    {
+      "id": "max_min_value",
+      "name": "最大（小）值",
+      "category": "函数性质",
+      "definition": "最大值：如果存在实数 M 满足：(1) ∀x∈I, f(x)≤M；(2) ∃x0∈I, f(x0)=M",
+      "key_formulas": [
+        "最大值 M: ∀x∈I, f(x)≤M 且 ∃x0, f(x0)=M",
+        "最小值 m: ∀x∈I, f(x)≥m 且 ∃x0, f(x0)=m"
+      ],
+      "keywords": ["最大值", "最小值", "极值", "最值"],
+      "prerequisites": ["monotonicity"],
+      "related_points": ["monotonicity", "parabola"]
+    },
+    {
+      "id": "even_function",
+      "name": "偶函数",
+      "category": "函数性质",
+      "definition": "设函数 f(x) 的定义域为 I，如果 ∀x∈I，都有 -x∈I，且 f(-x)=f(x)，那么称函数 f(x) 为偶函数",
+      "key_formulas": ["f(-x) = f(x)"],
+      "keywords": ["偶函数", "对称", "y轴对称"],
+      "prerequisites": ["function_basic"],
+      "related_points": ["odd_function", "monotonicity"]
+    },
+    {
+      "id": "odd_function",
+      "name": "奇函数",
+      "category": "函数性质",
+      "definition": "设函数 f(x) 的定义域为 I，如果 ∀x∈I，都有 -x∈I，且 f(-x)=-f(x)，那么称函数 f(x) 为奇函数",
+      "key_formulas": ["f(-x) = -f(x)"],
+      "keywords": ["奇函数", "对称", "原点对称"],
+      "prerequisites": ["function_basic"],
+      "related_points": ["even_function", "monotonicity"]
+    },
+    {
+      "id": "power_function",
+      "name": "幂函数",
+      "category": "基本初等函数",
+      "definition": "形如 y = x^α 的函数叫做幂函数，其中 x 是自变量，α 是常数",
+      "key_formulas": ["y = x^α"],
+      "keywords": ["幂函数", "指数", "幂"],
+      "prerequisites": ["function_basic", "monotonicity", "even_function", "odd_function"],
+      "related_points": ["monotonicity", "even_function", "odd_function"]
+    },
+    {
+      "id": "linear_function",
+      "name": "一次函数",
+      "category": "基本初等函数",
+      "definition": "形如 y = ax + b (a≠0) 的函数",
+      "key_formulas": ["y = ax + b (a≠0)"],
+      "keywords": ["一次函数", "正比例函数", "一次"],
+      "prerequisites": ["function_basic"],
+      "related_points": ["parabola"]
+    },
+    {
+      "id": "parabola",
+      "name": "二次函数",
+      "category": "基本初等函数",
+      "definition": "形如 y = ax² + bx + c (a≠0) 的函数",
+      "key_formulas": [
+        "y = ax² + bx + c (a≠0)",
+        "顶点: (-b/2a, (4ac-b²)/4a)"
+      ],
+      "keywords": ["二次函数", "抛物线", "顶点", "开口方向"],
+      "prerequisites": ["linear_function", "monotonicity"],
+      "related_points": ["max_min_value", "linear_function"]
+    },
+    {
+      "id": "inverse_proportional",
+      "name": "反比例函数",
+      "category": "基本初等函数",
+      "definition": "形如 y = k/x (k≠0) 的函数",
+      "key_formulas": ["y = k/x (k≠0)"],
+      "keywords": ["反比例函数", "双曲线"],
+      "prerequisites": ["function_basic"],
+      "related_points": ["monotonicity"]
+    },
+    {
+      "id": "absolute_value_function",
+      "name": "绝对值函数",
+      "category": "特殊函数",
+      "definition": "形如 y = |x| 的函数",
+      "key_formulas": ["y = |x| = { x, x≥0; -x, x<0 }"],
+      "keywords": ["绝对值", "分段函数"],
+      "prerequisites": ["piecewise_function"],
+      "related_points": ["piecewise_function", "even_function"]
+    }
+  ],
+  "learning_sequence": [
+    {
+      "step": 1,
+      "topic": "函数的概念",
+      "points": ["function_basic", "domain", "range", "interval"],
+      "description": "理解函数定义，掌握定义域和值域的概念"
+    },
+    {
+      "step": 2,
+      "topic": "函数的表示法",
+      "points": ["function_representation", "piecewise_function"],
+      "description": "学习函数的三种表示法，了解分段函数"
+    },
+    {
+      "step": 3,
+      "topic": "单调性",
+      "points": ["monotonicity"],
+      "description": "用符号语言刻画函数的增减性"
+    },
+    {
+      "step": 4,
+      "topic": "最大（小）值",
+      "points": ["max_min_value"],
+      "description": "理解函数的最值概念"
+    },
+    {
+      "step": 5,
+      "topic": "奇偶性",
+      "points": ["even_function", "odd_function"],
+      "description": "学习奇函数和偶函数的定义与图象特征"
+    },
+    {
+      "step": 6,
+      "topic": "幂函数",
+      "points": ["power_function"],
+      "description": "学习幂函数及其性质"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "topic": "函数概念",
+      "misconception": "认为 y=350x 和 y=350x (x∈[0,0.5]) 是同一个函数",
+      "explanation": "函数相等需要定义域和对应关系都相同"
+    },
+    {
+      "topic": "奇偶性",
+      "misconception": "认为 f(x)=x² 是奇函数",
+      "explanation": "f(-x)=(-x)²=x²=f(x)，所以是偶函数"
+    },
+    {
+      "topic": "单调性",
+      "misconception": "认为函数在定义域内递增就是增函数",
+      "explanation": "必须在整个定义域上才能说增函数"
+    },
+    {
+      "topic": "定义域",
+      "misconception": "忽略实际背景对定义域的限制",
+      "explanation": "实际问题中的函数定义域由实际条件决定"
+    }
+  ]
+}

@@ -1,0 +1,2637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odyssey Math - AI数学智能导师</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #FFFFFF;
+            color: #1A1A2E;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ==================== 左侧导航栏 ==================== */
+        .sidebar {
+            width: 64px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #FFFFFF;
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            z-index: 100;
+            transition: width 0.25s ease;
+            overflow: hidden;
+        }
+
+        .sidebar.expanded { width: 200px; }
+
+        .sidebar-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 20px 12px;
+            gap: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .toggle-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #8B95A5;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(74, 144, 217, 0.08);
+            color: #4A90D9;
+        }
+
+        .sidebar-brand { display: none; }
+        .sidebar.expanded .sidebar-brand { display: flex; flex-direction: column; gap: 2px; }
+        .sidebar-title { font-size: 16px; font-weight: 700; color: #4A90D9; white-space: nowrap; }
+        .sidebar-subtitle { font-size: 12px; font-weight: 400; color: #8B95A5; white-space: nowrap; }
+
+        .nav-items { width: 100%; display: flex; flex-direction: column; padding: 12px 8px; gap: 2px; }
+        .nav-item {
+            width: 100%; height: 48px; display: flex; align-items: center; justify-content: center;
+            gap: 12px; padding: 0 12px; border-radius: 12px; color: #8B95A5; cursor: pointer;
+            transition: all 0.2s ease; font-size: 14px; font-weight: 500; white-space: nowrap;
+            border: none; background: none;
+        }
+        .sidebar.expanded .nav-item { justify-content: flex-start; }
+        .nav-item:hover { background: rgba(74, 144, 217, 0.08); color: #4A90D9; }
+        .nav-item.active { background: linear-gradient(135deg, rgba(74, 144, 217, 0.12), rgba(102, 126, 234, 0.12)); color: #4A90D9; }
+        .nav-icon { font-size: 20px; flex-shrink: 0; width: 24px; text-align: center; }
+        .nav-text { display: none; color: inherit; }
+        .sidebar.expanded .nav-text { display: inline; }
+        .nav-bottom { margin-top: auto; width: 100%; display: flex; flex-direction: column; gap: 2px; padding: 12px 8px; border-top: 1px solid rgba(0,0,0,0.04); }
+
+        /* ==================== 主内容区 ==================== */
+        .main {
+            margin-left: 64px;
+            flex: 1;
+            min-height: 100vh;
+            transition: margin-left 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            background: #F8FAFC;
+        }
+        body.expanded .main { margin-left: 200px; }
+
+        /* ==================== 顶部栏 ==================== */
+        .topbar {
+            height: 58px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .chapter-select {
+            display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+            background: linear-gradient(135deg, #f0f4f8, #f8fafc);
+            border: 1px solid rgba(74, 144, 217, 0.15); border-radius: 10px;
+            font-size: 13px; color: #1A1A2E; cursor: pointer; border: none;
+            font-family: inherit; font-weight: 500; transition: all 0.2s ease;
+        }
+        .chapter-select:hover { background: linear-gradient(135deg, #e8f0f8, #f0f4f8); border-color: rgba(74, 144, 217, 0.3); }
+        .chapter-select .icon { font-size: 14px; }
+
+        .search-box { position: relative; display: flex; align-items: center; }
+        .search-trigger {
+            width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+            background: #F7F8FA; border-radius: 10px; cursor: pointer; font-size: 16px; color: #666;
+            transition: all 0.2s ease; z-index: 101;
+        }
+        .search-trigger:hover { background: #EEF1F5; color: #4A90D9; }
+        .search-trigger.hidden { opacity: 0; pointer-events: none; }
+        .search-input-wrapper {
+            position: absolute; left: 0; top: 50%; transform: translateY(-50%) translateX(-10px);
+            width: 260px; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 100;
+        }
+        .search-input-wrapper.show { opacity: 1; visibility: visible; transform: translateY(-50%) translateX(0); }
+        .search-input-wrapper::before {
+            content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            font-size: 14px; pointer-events: none; z-index: 1;
+        }
+        .search-input {
+            width: 100%; height: 40px; padding: 0 16px 0 40px; background: #fff;
+            border: 1px solid rgba(74, 144, 217, 0.3); border-radius: 10px;
+            font-size: 13px; font-family: inherit; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            outline: none; position: relative;
+        }
+        .search-input:focus { border-color: #4A90D9; }
+        .search-input::placeholder { color: #999; }
+
+        .topbar-right { display: flex; align-items: center; gap: 20px; }
+        .growth-stat {
+            display: flex; align-items: center; gap: 6px; padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 100, 0, 0.05));
+            border-radius: 20px; font-size: 13px; font-weight: 600; color: #FF6B00;
+        }
+        .growth-icon { font-size: 16px; }
+        .user-avatar {
+            width: 36px; height: 36px; background: linear-gradient(135deg, #4A90D9, #667eea);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+        }
+        .user-avatar:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(74, 144, 217, 0.4); }
+
+        /* ==================== 页面 ==================== */
+        .page { display: none; flex-direction: column; flex: 1; }
+        .page.active { display: flex; }
+
+        /* ==================== 首页 ==================== */
+        .hero {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 0 64px; text-align: center; position: relative;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+            background: rgba(74, 144, 217, 0.08); border-radius: 20px;
+            font-size: 12px; font-weight: 500; color: #4A90D9; margin-bottom: 32px; letter-spacing: 0.5px;
+        }
+        .hero-title { font-size: 56px; font-weight: 700; color: #1A1A2E; margin-bottom: 16px; letter-spacing: -1px; line-height: 1.1; }
+        .hero-title .gradient {
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero-subtitle { font-size: 18px; color: #666; max-width: 480px; line-height: 1.7; margin-bottom: 48px; font-weight: 400; }
+        .hero-cta {
+            display: inline-flex; align-items: center; gap: 10px; padding: 16px 36px;
+            background: linear-gradient(135deg, #4A90D9, #667eea); color: white; border: none;
+            border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; font-family: inherit; box-shadow: 0 4px 20px rgba(74, 144, 217, 0.3);
+            text-decoration: none;
+        }
+        .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(74, 144, 217, 0.4); }
+        .features { display: flex; gap: 16px; margin-top: 64px; }
+        .feature-card {
+            display: flex; align-items: center; gap: 12px; padding: 16px 24px;
+            background: #F7F8FA; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;
+            text-decoration: none; color: #1A1A2E;
+        }
+        .feature-card:hover { background: #EEF1F5; transform: translateY(-2px); }
+        .feature-icon { font-size: 18px; }
+        .feature-text { font-size: 14px; font-weight: 500; }
+
+        /* ==================== 知识图谱页面 ==================== */
+        .map-page {
+            flex: 1;
+            padding: 32px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+        }
+
+        /* ==================== 虚拟课堂页面 ==================== */
+        .classroom-page {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* AI导师侧边栏 */
+        .class-tutor-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.98);
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .class-tutor-header {
+            padding: 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .class-tutor-avatar {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            position: relative;
+        }
+
+        .class-tutor-avatar::after {
+            content: '';
+            position: absolute;
+            bottom: 2px; right: 2px;
+            width: 10px; height: 10px;
+            background: #10b981;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .class-tutor-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1A1A2E;
+        }
+
+        .class-tutor-status {
+            font-size: 11px;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .class-tutor-status .pulse {
+            width: 5px; height: 5px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        /* 对话区域 */
+        .class-tutor-chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .class-chat-bubble {
+            max-width: 90%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .class-chat-bubble.ai {
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+            border-bottom-left-radius: 3px;
+            align-self: flex-start;
+        }
+
+        .class-chat-bubble.user {
+            background: #f0f4f8;
+            color: #1A1A2E;
+            border-bottom-right-radius: 3px;
+            align-self: flex-end;
+        }
+
+        /* 输入区域 */
+        .class-tutor-input {
+            padding: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .class-input-box {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .class-input-field {
+            flex: 1;
+            height: 36px;
+            padding: 0 12px;
+            background: #f0f4f8;
+            border: 1px solid transparent;
+            border-radius: 18px;
+            font-size: 12px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .class-input-field:focus {
+            border-color: #4A90D9;
+            background: #fff;
+        }
+
+        .class-input-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* 主内容区 */
+        .class-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .class-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .class-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1A1A2E;
+        }
+
+        .class-growth {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            background: rgba(255, 165, 0, 0.1);
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #FF6B00;
+        }
+
+        /* 模式标签 */
+        .class-mode-tabs {
+            display: flex;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 4px;
+            border-radius: 10px;
+            width: fit-content;
+        }
+
+        .class-mode-tab {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748B;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .class-mode-tab.active {
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+        }
+
+        /* 内容容器 */
+        .class-content-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 14px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 绘图区 */
+        .class-graph-area {
+            flex: 1;
+            position: relative;
+            background: #fafbfc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .class-coordinate {
+            position: relative;
+            width: calc(100% - 24px);
+            height: calc(100% - 24px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background:
+                linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .axis-x, .axis-y {
+            position: absolute;
+            background: #333;
+        }
+
+        .axis-x {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .axis-y {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .axis-label {
+            position: absolute;
+            font-size: 10px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .axis-label.x-label { bottom: 3px; right: 6px; }
+        .axis-label.y-label { top: 3px; right: 3px; }
+        .axis-label.origin { top: 50%; left: 50%; transform: translate(-50%, -50%); margin-left: 5px; margin-top: -5px; }
+
+        .class-curve-svg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+        }
+
+        .class-curve-svg svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .class-curve-path {
+            fill: none;
+            stroke: #4A90D9;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+        }
+
+        .class-drag-point {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            cursor: grab;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .class-point-label {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1A1A2E;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            white-space: nowrap;
+        }
+
+        .class-hint {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #4A90D9;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .class-toolbar {
+            position: absolute;
+            bottom: 50px;
+            left: 10px;
+            display: flex;
+            gap: 4px;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .class-tool-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: none;
+            background: #f0f4f8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .class-tool-btn.active {
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+        }
+
+        .class-page-indicator {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            color: #64748B;
+        }
+
+        /* PPT/习题区 */
+        .class-ppt-area, .class-exercise-area {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            padding: 16px;
+        }
+
+        .class-ppt-area.active, .class-exercise-area.active {
+            display: flex;
+        }
+
+        /* 章节卡片 */
+        .chapter-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .chapter-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        /* 章节头部 */
+        .chapter-header {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px;
+            gap: 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .chapter-header:hover {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        /* 序号圆圈 */
+        .chapter-index {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .chapter-index.mastered { background: linear-gradient(135deg, #10b981, #059669); }
+        .chapter-index.learning { background: linear-gradient(135deg, #4A90D9, #3b82f6); }
+        .chapter-index.locked { background: #e5e7eb; color: #9ca3af; }
+
+        /* 章节信息 */
+        .chapter-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chapter-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1A1A2E;
+            margin-bottom: 4px;
+        }
+
+        .chapter-meta {
+            font-size: 13px;
+            color: #64748B;
+        }
+
+        /* 状态标签 */
+        .chapter-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .chapter-status.mastered {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+        }
+
+        .chapter-status.learning {
+            background: rgba(74, 144, 217, 0.12);
+            color: #4A90D9;
+        }
+
+        .chapter-status.locked {
+            background: rgba(0, 0, 0, 0.06);
+            color: #9ca3af;
+        }
+
+        /* 展开/收起箭头 */
+        .chapter-arrow {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: #64748B;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .chapter-arrow:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .chapter-card.expanded .chapter-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* 子节点列表 */
+        .chapter-sections {
+            display: none;
+            padding: 0 24px 20px 84px;
+            gap: 12px;
+            flex-direction: column;
+        }
+
+        .chapter-card.expanded .chapter-sections {
+            display: flex;
+        }
+
+        /* 子节点卡片 */
+        .section-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border-left: 4px solid;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .section-item:hover {
+            background: #f0f4f8;
+            transform: translateX(4px);
+        }
+
+        .section-item.mastered { border-left-color: #10b981; }
+        .section-item.learning { border-left-color: #4A90D9; }
+        .section-item.locked { border-left-color: #e5e7eb; }
+
+        .section-info {
+            flex: 1;
+        }
+
+        .section-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1A1A2E;
+            margin-bottom: 2px;
+        }
+
+        .section-meta {
+            font-size: 12px;
+            color: #64748B;
+        }
+
+        .section-status {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .section-status.mastered {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .section-status.learning {
+            background: rgba(74, 144, 217, 0.1);
+            color: #4A90D9;
+        }
+
+        .section-status.locked {
+            background: rgba(0, 0, 0, 0.05);
+            color: #9ca3af;
+        }
+
+        /* 进度条 */
+        .section-progress {
+            width: 120px;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .section-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4A90D9, #667eea);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        /* 预览卡片 */
+        .preview-card {
+            position: fixed; top: 50%; right: 40px; transform: translateY(-50%) scale(0.9);
+            width: 280px; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px);
+            border: 1px solid rgba(74, 144, 217, 0.2); border-radius: 20px; padding: 24px;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 40px rgba(74, 144, 217, 0.08);
+            z-index: 200;
+        }
+        .preview-card.show { opacity: 1; visibility: visible; transform: translateY(-50%) scale(1); }
+        .card-close {
+            position: absolute; top: 16px; right: 16px; width: 28px; height: 28px;
+            border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center;
+            justify-content: center; cursor: pointer; font-size: 14px; transition: all 0.2s ease;
+        }
+        .card-close:hover { background: rgba(0,0,0,0.1); }
+        .card-title { font-size: 18px; font-weight: 600; color: #1A1A2E; margin-bottom: 4px; }
+        .card-subtitle { font-size: 13px; color: #64748B; margin-bottom: 20px; }
+        .card-meta { display: flex; gap: 16px; margin-bottom: 20px; }
+        .card-meta-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #64748B; }
+        .card-btn {
+            width: 100%; padding: 14px 20px; border: none; border-radius: 12px;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+        }
+        .card-btn-primary {
+            background: linear-gradient(135deg, #4A90D9, #667eea); color: white;
+            box-shadow: 0 4px 15px rgba(74, 144, 217, 0.4);
+        }
+        .card-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74, 144, 217, 0.5); }
+        .card-btn-secondary { background: rgba(0,0,0,0.05); color: #1A1A2E; margin-top: 10px; }
+        .card-btn-secondary:hover { background: rgba(0,0,0,0.08); }
+
+        /* ==================== 智能辅导页 ==================== */
+        .tutoring-page {
+            display: flex;
+            height: calc(100vh - 58px);
+            gap: 16px;
+            padding: 16px;
+            background: #F8FAFC;
+        }
+
+        /* 左侧工作区 */
+        .tutoring-workspace {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        /* 学生问题卡片 */
+        .tutoring-question-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .tutoring-question-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #4A90D9;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tutoring-question-text {
+            font-size: 14px;
+            color: #1A1A2E;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        /* AI解题空间 */
+        .tutoring-solution {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tutoring-solution-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tutoring-solution-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1A1A2E;
+        }
+
+        .tutoring-solution-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .solution-step {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .step-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .step-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .step-dot.concept { background: linear-gradient(135deg, #4A90D9, #667eea); }
+        .step-dot.theorem { background: linear-gradient(135deg, #8B5CF6, #A855F7); }
+        .step-dot.formula { background: linear-gradient(135deg, #10B981, #059669); }
+        .step-dot.calc { background: linear-gradient(135deg, #F59E0B, #D97706); }
+        .step-dot.explain { background: linear-gradient(135deg, #EC4899, #DB2777); }
+
+        .step-line {
+            width: 2px;
+            flex: 1;
+            background: rgba(0,0,0,0.08);
+            margin-top: 6px;
+        }
+
+        .step-content {
+            flex: 1;
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 12px 14px;
+        }
+
+        .step-tag {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            display: inline-block;
+        }
+
+        .step-tag.concept { background: rgba(74,144,217,0.15); color: #4A90D9; }
+        .step-tag.theorem { background: rgba(139,92,246,0.15); color: #8B5CF6; }
+        .step-tag.formula { background: rgba(16,185,129,0.15); color: #10B981; }
+        .step-tag.calc { background: rgba(245,158,11,0.15); color: #F59E0B; }
+        .step-tag.explain { background: rgba(236,72,153,0.15); color: #EC4899; }
+
+        .step-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1A1A2E;
+            margin-bottom: 6px;
+        }
+
+        .step-text {
+            font-size: 12px;
+            color: #64748B;
+            line-height: 1.6;
+        }
+
+        .step-formula {
+            font-size: 13px;
+            color: #1A1A2E;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-family: 'Times New Roman', serif;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        /* 悬浮按钮 */
+        .tutoring-float-btns {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .tutoring-float-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(74,144,217,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .tutoring-float-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(74,144,217,0.4);
+        }
+
+        /* 右侧对话区 */
+        .tutoring-chat-panel {
+            width: 380px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tutoring-chat-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tutoring-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .tutoring-info {
+            flex: 1;
+        }
+
+        .tutoring-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A1A2E;
+        }
+
+        .tutoring-subtitle {
+            font-size: 11px;
+            color: #64748B;
+        }
+
+        .tutoring-mode-toggle {
+            display: flex;
+            gap: 4px;
+            background: #f0f4f8;
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .tutoring-mode-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            border: none;
+            background: none;
+            color: #64748B;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tutoring-mode-btn.active {
+            background: white;
+            color: #4A90D9;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tutoring-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tutoring-msg {
+            display: flex;
+            gap: 10px;
+            max-width: 85%;
+        }
+
+        .tutoring-msg.ai {
+            align-self: flex-start;
+        }
+
+        .tutoring-msg.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .tutoring-msg-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .tutoring-msg-content {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .tutoring-msg.ai .tutoring-msg-content {
+            background: #f0f4f8;
+            color: #1A1A2E;
+            border-bottom-left-radius: 4px;
+        }
+
+        .tutoring-msg.user .tutoring-msg-content {
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .tutoring-msg-time {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .tutoring-msg.user .tutoring-msg-time {
+            text-align: right;
+        }
+
+        /* 底部输入区 */
+        .tutoring-input-area {
+            padding: 12px 16px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            background: #fafbfc;
+        }
+
+        .tutoring-input-tools {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .tutoring-tool-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: white;
+            color: #64748B;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .tutoring-tool-btn:hover {
+            border-color: #4A90D9;
+            color: #4A90D9;
+            background: rgba(74,144,217,0.05);
+        }
+
+        .tutoring-input-box {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .tutoring-text-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            font-size: 13px;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        .tutoring-text-input:focus {
+            border-color: #4A90D9;
+        }
+
+        .tutoring-send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .tutoring-send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .tutoring-input-hint {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ==================== 弹窗样式 ==================== */
+        .geogebra-popup, .knowledge-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .geogebra-popup.show, .knowledge-popup.show {
+            display: flex;
+        }
+
+        .geogebra-popup-content, .knowledge-popup-content {
+            background: white;
+            border-radius: 16px;
+            width: 560px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .geogebra-popup-header, .knowledge-popup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .geogebra-popup-title, .knowledge-popup-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1A1A2E;
+        }
+
+        .geogebra-popup-close, .knowledge-popup-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: #f0f4f8;
+            color: #64748B;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .geogebra-popup-close:hover, .knowledge-popup-close:hover {
+            background: #e2e8f0;
+        }
+
+        .geogebra-popup-body, .knowledge-popup-body {
+            padding: 20px;
+        }
+
+        .geogebra-placeholder {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .geogebra-tools {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .geogebra-tool-btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: white;
+            font-size: 13px;
+            color: #64748B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .geogebra-tool-btn:hover, .geogebra-tool-btn.active {
+            border-color: #4A90D9;
+            color: #4A90D9;
+            background: rgba(74,144,217,0.05);
+        }
+
+        .geogebra-tool-btn.active {
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+            border-color: transparent;
+        }
+
+        .knowledge-path {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .knowledge-node {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .knowledge-node-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .knowledge-node-content {
+            flex: 1;
+        }
+
+        .knowledge-node-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1A1A2E;
+            margin-bottom: 2px;
+        }
+
+        .knowledge-node-desc {
+            font-size: 12px;
+            color: #64748B;
+        }
+
+        .knowledge-line {
+            width: 2px;
+            height: 24px;
+            background: rgba(0,0,0,0.1);
+            margin-left: 5px;
+            margin: 4px 0 4px 5px;
+        }
+
+        .knowledge-summary {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        /* ========== 处理中指示器 ========== */
+        .tutoring-processing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: #f0f4f8;
+            border-radius: 10px;
+            margin: 8px 0;
+            font-size: 13px;
+            color: #64748B;
+        }
+
+        .processing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4A90D9;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        /* ========== Toast 提示 ========== */
+        .tutoring-toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(74, 144, 217, 0.4);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+
+        .tutoring-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ========== Schema 达成分流弹窗 ========== */
+        .schema-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .schema-popup.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .schema-popup-content {
+            background: white;
+            border-radius: 16px;
+            width: 400px;
+            max-width: 90%;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .schema-popup.show .schema-popup-content {
+            transform: scale(1);
+        }
+
+        .schema-popup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .schema-popup-header button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .schema-popup-body {
+            padding: 20px;
+        }
+
+        .schema-popup-body p {
+            font-size: 14px;
+            color: #64748B;
+            margin-bottom: 16px;
+        }
+
+        .schema-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .schema-option-btn {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+            background: white;
+            font-size: 14px;
+            color: #1A1A2E;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .schema-option-btn:hover {
+            border-color: #4A90D9;
+            color: #4A90D9;
+            background: rgba(74,144,217,0.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- 左侧导航 -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="toggle-btn" onclick="toggleSidebar()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </div>
+            <div class="sidebar-brand">
+                <span class="sidebar-title">Odyssey Math</span>
+                <span class="sidebar-subtitle">AI数学导师</span>
+            </div>
+        </div>
+
+        <div class="nav-items">
+            <button class="nav-item active" onclick="switchPage('home')">
+                <div class="nav-icon">🏠</div>
+                <span class="nav-text">首页</span>
+            </button>
+            <button class="nav-item" onclick="switchPage('map')">
+                <div class="nav-icon">🗺️</div>
+                <span class="nav-text">学习地图</span>
+            </button>
+            <button class="nav-item">
+                <div class="nav-icon">📚</div>
+                <span class="nav-text">章节学习</span>
+            </button>
+            <button class="nav-item" onclick="switchPage('tutoring')">
+                <div class="nav-icon">💬</div>
+                <span class="nav-text">智能辅导</span>
+            </button>
+            <button class="nav-item">
+                <div class="nav-icon">✍️</div>
+                <span class="nav-text">题型练习</span>
+            </button>
+            <button class="nav-item">
+                <div class="nav-icon">📊</div>
+                <span class="nav-text">学习报告</span>
+            </button>
+        </div>
+
+        <div class="nav-bottom">
+            <button class="nav-item">
+                <div class="nav-icon">⚙️</div>
+                <span class="nav-text">设置</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main">
+        <!-- 顶部栏 -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="chapter-select">
+                    <span class="icon">📖</span>
+                    <span>人教版A版 - 必修第一册</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+                <div class="search-box">
+                    <div class="search-input-wrapper" id="searchWrapper">
+                        <input type="text" class="search-input" placeholder="搜索知识点/题目类型..." id="searchInput">
+                    </div>
+                    <div class="search-trigger" onclick="toggleSearch()">🔍</div>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="growth-stat">
+                    <span class="growth-icon">🔥</span>
+                    <span>1250</span>
+                </div>
+                <div class="user-avatar" title="进入成长中心">学</div>
+            </div>
+        </header>
+
+        <!-- 首页 -->
+        <div class="page active" id="page-home">
+            <section class="hero">
+                <div class="hero-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    AI 驱动 · 个性化学习
+                </div>
+
+                <h1 class="hero-title">
+                    <span class="gradient">AI 数学</span>智能导师
+                </h1>
+
+                <p class="hero-subtitle">
+                    让每个学生都能拥有专属的数学学习伙伴<br>
+                    互动式微课堂 · 动态几何画板 · 个性化学习路径
+                </p>
+
+                <button class="hero-cta" onclick="switchPage('map')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    开始学习
+                </button>
+
+                <div class="features">
+                    <button class="feature-card" onclick="switchPage('map')">
+                        <div class="feature-icon">🗺️</div>
+                        <span class="feature-text">学习地图</span>
+                    </button>
+                    <button class="feature-card">
+                        <div class="feature-icon">📚</div>
+                        <span class="feature-text">章节学习</span>
+                    </button>
+                    <button class="feature-card">
+                        <div class="feature-icon">✍️</div>
+                        <span class="feature-text">题型练习</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- 学习地图页 -->
+        <div class="page" id="page-map">
+            <div class="map-page">
+                <!-- 第一章 -->
+                <div class="chapter-card expanded" onclick="toggleChapter(this)">
+                    <div class="chapter-header">
+                        <div class="chapter-index mastered">1</div>
+                        <div class="chapter-info">
+                            <div class="chapter-name">第一章 集合与常用逻辑用语</div>
+                            <div class="chapter-meta">5 个小节 · 已掌握</div>
+                        </div>
+                        <div class="chapter-status mastered">已完成</div>
+                        <div class="chapter-arrow">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="chapter-sections">
+                        <div class="section-item mastered" onclick="event.stopPropagation(); showCard({name: '1.1 集合的概念', subtitle: '集合的定义与表示'})">
+                            <div class="section-info">
+                                <div class="section-name">1.1 集合的概念</div>
+                                <div class="section-meta">集合的定义与表示</div>
+                            </div>
+                            <div class="section-status mastered">掌握</div>
+                        </div>
+                        <div class="section-item mastered" onclick="event.stopPropagation(); showCard({name: '1.2 集合间的基本关系', subtitle: '子集、真子集、相等'})">
+                            <div class="section-info">
+                                <div class="section-name">1.2 集合间的基本关系</div>
+                                <div class="section-meta">子集、真子集、相等</div>
+                            </div>
+                            <div class="section-status mastered">掌握</div>
+                        </div>
+                        <div class="section-item mastered" onclick="event.stopPropagation(); showCard({name: '1.3 集合的基本运算', subtitle: '交、并、补运算'})">
+                            <div class="section-info">
+                                <div class="section-name">1.3 集合的基本运算</div>
+                                <div class="section-meta">交、并、补运算</div>
+                            </div>
+                            <div class="section-status mastered">掌握</div>
+                        </div>
+                        <div class="section-item mastered" onclick="event.stopPropagation(); showCard({name: '1.4 充分条件与必要条件', subtitle: '充分必要条件判断'})">
+                            <div class="section-info">
+                                <div class="section-name">1.4 充分条件与必要条件</div>
+                                <div class="section-meta">充分必要条件判断</div>
+                            </div>
+                            <div class="section-status mastered">掌握</div>
+                        </div>
+                        <div class="section-item mastered" onclick="event.stopPropagation(); showCard({name: '1.5 全称量词与存在量词', subtitle: '命题的否定'})">
+                            <div class="section-info">
+                                <div class="section-name">1.5 全称量词与存在量词</div>
+                                <div class="section-meta">命题的否定</div>
+                            </div>
+                            <div class="section-status mastered">掌握</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第二章 -->
+                <div class="chapter-card" onclick="toggleChapter(this)">
+                    <div class="chapter-header">
+                        <div class="chapter-index learning">2</div>
+                        <div class="chapter-info">
+                            <div class="chapter-name">第二章 一元二次函数</div>
+                            <div class="chapter-meta">4 个小节 · 正在学习</div>
+                        </div>
+                        <div class="chapter-status learning">学习中</div>
+                        <div class="chapter-arrow">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="chapter-sections">
+                        <div class="section-item mastered" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">2.1 二次函数与一元二次方程</div>
+                                <div class="section-meta">函数与方程的关系</div>
+                            </div>
+                            <div class="section-status mastered">掌握</div>
+                        </div>
+                        <div class="section-item learning" onclick="event.stopPropagation(); switchPage('classroom')">
+                            <div class="section-info">
+                                <div class="section-name">2.2 一元二次函数图像与性质</div>
+                                <div class="section-meta">开口方向、对称轴、顶点</div>
+                                <div class="section-progress">
+                                    <div class="section-progress-bar" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <div class="section-status learning">进行中</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">2.3 二次函数的应用</div>
+                                <div class="section-meta">实际问题的建模</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">2.4 拔高练习</div>
+                                <div class="section-meta">综合运用</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第三章 -->
+                <div class="chapter-card" onclick="toggleChapter(this)">
+                    <div class="chapter-header">
+                        <div class="chapter-index learning">3</div>
+                        <div class="chapter-info">
+                            <div class="chapter-name">第三章 函数的概念与性质</div>
+                            <div class="chapter-meta">6 个小节 · 即将学习</div>
+                        </div>
+                        <div class="chapter-status learning">学习中</div>
+                        <div class="chapter-arrow">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="chapter-sections">
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">3.1 函数的概念及其表示</div>
+                                <div class="section-meta">函数的定义域与值域</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">3.2 函数的单调性</div>
+                                <div class="section-meta">增函数与减函数</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">3.3 函数的最大（小）值</div>
+                                <div class="section-meta">函数极值问题</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">3.4 函数的奇偶性</div>
+                                <div class="section-meta">奇函数与偶函数</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">3.5 函数的图像</div>
+                                <div class="section-meta">图像变换与识图</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">3.6 拔高练习</div>
+                                <div class="section-meta">综合运用</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第四章 -->
+                <div class="chapter-card" onclick="toggleChapter(this)">
+                    <div class="chapter-header">
+                        <div class="chapter-index locked">4</div>
+                        <div class="chapter-info">
+                            <div class="chapter-name">第四章 指数函数与对数函数</div>
+                            <div class="chapter-meta">5 个小节</div>
+                        </div>
+                        <div class="chapter-status locked">未开始</div>
+                        <div class="chapter-arrow">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="chapter-sections">
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">4.1 指数</div>
+                                <div class="section-meta">指数运算</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">4.2 指数函数</div>
+                                <div class="section-meta">指数函数的图像与性质</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">4.3 对数</div>
+                                <div class="section-meta">对数运算</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">4.4 对数函数</div>
+                                <div class="section-meta">对数函数的图像与性质</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">4.5 指数函数与对数函数的关系</div>
+                                <div class="section-meta">函数图像的对称性</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第五章 -->
+                <div class="chapter-card" onclick="toggleChapter(this)">
+                    <div class="chapter-header">
+                        <div class="chapter-index locked">5</div>
+                        <div class="chapter-info">
+                            <div class="chapter-name">第五章 三角函数</div>
+                            <div class="chapter-meta">6 个小节</div>
+                        </div>
+                        <div class="chapter-status locked">未开始</div>
+                        <div class="chapter-arrow">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="chapter-sections">
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">5.1 任意角和弧度制</div>
+                                <div class="section-meta">角的度量</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">5.2 三角函数的概念</div>
+                                <div class="section-meta">正弦、余弦、正切</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">5.3 正弦函数图像与性质</div>
+                                <div class="section-meta">周期性与奇偶性</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">5.4 余弦函数图像与性质</div>
+                                <div class="section-meta">图像变换</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">5.5 正切函数图像与性质</div>
+                                <div class="section-meta">正切函数的图像</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                        <div class="section-item locked" onclick="event.stopPropagation()">
+                            <div class="section-info">
+                                <div class="section-name">5.6 三角函数模型的简单应用</div>
+                                <div class="section-meta">实际问题</div>
+                            </div>
+                            <div class="section-status locked">未开始</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 虚拟课堂页 -->
+        <div class="page" id="page-classroom">
+            <div class="classroom-page">
+                <!-- AI导师侧边栏 -->
+                <div class="class-tutor-sidebar">
+                    <div class="class-tutor-header">
+                        <div class="class-tutor-avatar">👩‍🏫</div>
+                        <div class="class-tutor-name">数学奥德赛 AI</div>
+                        <div class="class-tutor-status">
+                            <span class="pulse"></span>
+                            在线教学
+                        </div>
+                    </div>
+                    <div class="class-tutor-chat" id="classTutorChat">
+                        <div class="class-chat-bubble ai">
+                            同学们好！今天我们学习函数的奇偶性。<br><br>
+                            让我们先观察：f(x) = x³
+                        </div>
+                        <div class="class-chat-bubble ai">
+                            请拖动图中的点 P，观察 P 和 P' 的位置关系～
+                        </div>
+                    </div>
+                    <div class="class-tutor-input">
+                        <div class="class-input-box">
+                            <input type="text" class="class-input-field" placeholder="输入你的问题..." id="classUserInput">
+                            <button class="class-input-btn" onclick="sendClassMessage()">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 主内容区 -->
+                <div class="class-content">
+                    <div class="class-header">
+                        <div class="class-title">3.2.2 函数的奇偶性</div>
+                        <div class="class-growth">
+                            <span>🔥</span>
+                            <span>1250</span>
+                        </div>
+                    </div>
+
+                    <div class="class-mode-tabs">
+                        <button class="class-mode-tab active" onclick="switchClassMode('graph', this)">核心画板</button>
+                        <button class="class-mode-tab" onclick="switchClassMode('ppt', this)">教学PPT</button>
+                        <button class="class-mode-tab" onclick="switchClassMode('exercise', this)">习题演练</button>
+                    </div>
+
+                    <div class="class-content-container">
+                        <!-- 核心画板 -->
+                        <div class="class-graph-area" id="classGraphMode">
+                            <div class="class-coordinate" id="classCoord">
+                                <div class="axis-x"></div>
+                                <div class="axis-y"></div>
+                                <span class="axis-label x-label">x</span>
+                                <span class="axis-label y-label">y</span>
+                                <span class="axis-label origin">(0,0)</span>
+
+                                <div class="class-curve-svg">
+                                    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                                        <path class="class-curve-path" d="M 5 50 Q 25 20, 50 50 T 95 50" />
+                                    </svg>
+                                </div>
+
+                                <div class="class-drag-point" id="classPointP" style="left: 70%; top: 30%;">
+                                    <div class="class-point-label">P(x, f(x))</div>
+                                </div>
+
+                                <div class="class-drag-point" id="classPointP2" style="left: 30%; top: 70%; background: linear-gradient(135deg, #10b981, #059669);">
+                                    <div class="class-point-label">P'(-x, -f(x))</div>
+                                </div>
+                            </div>
+
+                            <div class="class-hint">💡 拖拽点 P 观察对称性</div>
+                            <div class="class-page-indicator">探究1</div>
+
+                            <div class="class-toolbar">
+                                <button class="class-tool-btn active" title="激光笔">🔴</button>
+                                <button class="class-tool-btn" title="画笔">✏️</button>
+                                <button class="class-tool-btn" title="聚焦">🎯</button>
+                            </div>
+                        </div>
+
+                        <!-- PPT区 -->
+                        <div class="class-ppt-area" id="classPptMode">
+                            <div class="ppt-title" style="font-size: 14px; font-weight: 600; color: #1A1A2E; margin-bottom: 12px; padding-left: 8px; border-left: 3px solid #4A90D9;">奇函数概念推导</div>
+                            <div style="background: #f8fafc; border-radius: 10px; padding: 16px; flex: 1; overflow-y: auto;">
+                                <div style="margin-bottom: 14px;">
+                                    <h3 style="font-size: 13px; font-weight: 600; color: #1A1A2E; margin-bottom: 6px;">观察对称性</h3>
+                                    <p style="font-size: 12px; color: #64748B; line-height: 1.6;">对于奇函数 f(x) = x³，任取一点 P(x, f(x))，其关于原点的对称点 P'(-x, -f(x)) 也在函数图像上。这说明奇函数图像关于原点中心对称。</p>
+                                </div>
+                                <div style="margin-bottom: 14px;">
+                                    <h3 style="font-size: 13px; font-weight: 600; color: #1A1A2E; margin-bottom: 6px;">形式化定义</h3>
+                                    <p style="font-size: 12px; color: #64748B; line-height: 1.6;">如果对于函数 f(x) 的定义域 D 内任意一个 x，都有 f(-x) = -f(x)，则称 f(x) 为奇函数。</p>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 13px; font-weight: 600; color: #1A1A2E; margin-bottom: 6px;">判断方法</h3>
+                                    <p style="font-size: 12px; color: #64748B; line-height: 1.6;">1. 先求定义域，判断是否关于原点对称<br>2. 验证 f(-x) = -f(x) 是否成立<br>3. 两者都满足则为奇函数</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 习题区 -->
+                        <div class="class-exercise-area" id="classExerciseMode">
+                            <div class="exercise-title" style="font-size: 14px; font-weight: 600; color: #1A1A2E; margin-bottom: 12px;">强化练习 · 判断下列函数是否为奇函数</div>
+                            <div style="background: #f8fafc; border-radius: 10px; padding: 14px; flex: 1; overflow-y: auto;">
+                                <p style="font-size: 13px; color: #1A1A2E; margin-bottom: 12px;"><strong>题目 1：</strong>判断 f(x) = x³ + x 是否为奇函数</p>
+
+                                <div style="background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                                    <div style="font-size: 11px; color: #64748B; margin-bottom: 6px;">计算过程</div>
+                                    <input type="text" style="width: 100%; padding: 8px 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-size: 12px; outline: none;" placeholder="f(-x) = ...">
+                                </div>
+
+                                <div style="background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                                    <div style="font-size: 11px; color: #64748B; margin-bottom: 6px;">结论</div>
+                                    <input type="text" style="width: 100%; padding: 8px 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-size: 12px; outline: none;" placeholder="所以...">
+                                </div>
+
+                                <div style="display: flex; gap: 8px;">
+                                    <button style="padding: 8px 16px; background: linear-gradient(135deg, #4A90D9, #667eea); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">提交解答</button>
+                                    <button style="padding: 8px 12px; background: #f0f4f8; color: #64748B; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">💡 请求提示</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 智能辅导页 -->
+        <div class="page" id="page-tutoring">
+            <div class="tutoring-page">
+                <!-- 左侧工作区 -->
+                <div class="tutoring-workspace">
+                    <!-- 学生问题卡片 -->
+                    <div class="tutoring-question-card">
+                        <div class="tutoring-question-label">📝 学生提问</div>
+                        <div class="tutoring-question-text">解方程：x² - 5x + 6 = 0</div>
+                    </div>
+
+                    <!-- AI解题空间 -->
+                    <div class="tutoring-solution" style="position: relative;">
+                        <div class="tutoring-solution-header">
+                            <div class="tutoring-solution-title">AI 解题空间</div>
+                            <span style="font-size: 11px; color: #64748B;">分步展示</span>
+                        </div>
+                        <div class="tutoring-solution-scroll">
+                            <!-- Step 1: 概念 -->
+                            <div class="solution-step">
+                                <div class="step-indicator">
+                                    <div class="step-dot concept">1</div>
+                                    <div class="step-line"></div>
+                                </div>
+                                <div class="step-content">
+                                    <span class="step-tag concept">概念</span>
+                                    <div class="step-title">问题类型识别</div>
+                                    <div class="step-text">这是一个一元二次方程，标准形式为 ax² + bx + c = 0</div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: 定理 -->
+                            <div class="solution-step">
+                                <div class="step-indicator">
+                                    <div class="step-dot theorem">2</div>
+                                    <div class="step-line"></div>
+                                </div>
+                                <div class="step-content">
+                                    <span class="step-tag theorem">定理</span>
+                                    <div class="step-title">求解方法选择</div>
+                                    <div class="step-text">对于一元二次方程，有三种常见方法：</div>
+                                    <div style="margin-top: 8px; font-size: 12px; color: #4A90D9;">• 因式分解法<br>• 配方法<br>• 求根公式法</div>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: 公式 -->
+                            <div class="solution-step">
+                                <div class="step-indicator">
+                                    <div class="step-dot formula">3</div>
+                                    <div class="step-line"></div>
+                                </div>
+                                <div class="step-content">
+                                    <span class="step-tag formula">公式</span>
+                                    <div class="step-title">因式分解步骤</div>
+                                    <div class="step-text">寻找两个数，使得：</div>
+                                    <div class="step-formula">a × c = 6 且它们的和 = -5</div>
+                                    <div class="step-text" style="margin-top: 8px;">这两个数是 -2 和 -3，因为：(-2) × (-3) = 6 且 (-2) + (-3) = -5</div>
+                                </div>
+                            </div>
+
+                            <!-- Step 4: 计算 -->
+                            <div class="solution-step">
+                                <div class="step-indicator">
+                                    <div class="step-dot calc">4</div>
+                                    <div class="step-line"></div>
+                                </div>
+                                <div class="step-content">
+                                    <span class="step-tag calc">计算</span>
+                                    <div class="step-title">因式分解</div>
+                                    <div class="step-formula">x² - 5x + 6 = (x - 2)(x - 3) = 0</div>
+                                    <div class="step-text" style="margin-top: 8px;">由因式分解得：(x - 2)(x - 3) = 0</div>
+                                </div>
+                            </div>
+
+                            <!-- Step 5: 解释 -->
+                            <div class="solution-step">
+                                <div class="step-indicator">
+                                    <div class="step-dot explain">5</div>
+                                </div>
+                                <div class="step-content">
+                                    <span class="step-tag explain">解释</span>
+                                    <div class="step-title">最终结论</div>
+                                    <div class="step-formula">x₁ = 2, x₂ = 3</div>
+                                    <div class="step-text" style="margin-top: 8px;">当 x = 2 或 x = 3 时，方程成立</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 悬浮按钮 -->
+                        <div class="tutoring-float-btns">
+                            <button class="tutoring-float-btn" title="打开GeoGebra画板" onclick="showGeogebraPopup()">📐</button>
+                            <button class="tutoring-float-btn" title="知识点溯源" onclick="showKnowledgePopup()">🔍</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧对话区 -->
+                <div class="tutoring-chat-panel">
+                    <div class="tutoring-chat-header">
+                        <div class="tutoring-avatar">👩‍🏫</div>
+                        <div class="tutoring-info">
+                            <div class="tutoring-name">AI导师</div>
+                            <div class="tutoring-subtitle">引导式学习助手</div>
+                        </div>
+                        <div class="tutoring-mode-toggle">
+                            <button class="tutoring-mode-btn active">📝 文字</button>
+                            <button class="tutoring-mode-btn">🎤 语音</button>
+                        </div>
+                    </div>
+
+                    <div class="tutoring-chat-messages">
+                        <div class="tutoring-msg ai">
+                            <div class="tutoring-msg-avatar">👩‍🏫</div>
+                            <div>
+                                <div class="tutoring-msg-content">同学你好！我们一起来解这个方程。首先，你能告诉我这个方程的"a"、"b"、"c"分别是什么吗？</div>
+                                <div class="tutoring-msg-time">刚刚</div>
+                            </div>
+                        </div>
+                        <div class="tutoring-msg user">
+                            <div>
+                                <div class="tutoring-msg-content">a=1, b=-5, c=6</div>
+                                <div class="tutoring-msg-time">刚刚</div>
+                            </div>
+                        </div>
+                        <div class="tutoring-msg ai">
+                            <div class="tutoring-msg-avatar">👩‍🏫</div>
+                            <div>
+                                <div class="tutoring-msg-content">很好！那你能观察到 6 是由哪两个数的乘积得到的吗？提示：这两个数的和要等于 -5。</div>
+                                <div class="tutoring-msg-time">刚刚</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutoring-input-area">
+                        <div class="tutoring-input-tools">
+                            <button class="tutoring-tool-btn" title="拍照">📷</button>
+                            <button class="tutoring-tool-btn" title="上传图片">🖼️</button>
+                            <button class="tutoring-tool-btn" title="语音输入">🎤</button>
+                        </div>
+                        <div class="tutoring-input-box">
+                            <textarea class="tutoring-text-input" placeholder="输入你的回答或提问..." rows="1" id="tutoringInput"></textarea>
+                            <button class="tutoring-send-btn" onclick="sendTutoringMessage()">➤</button>
+                        </div>
+                        <div class="tutoring-input-hint">
+                            <span>💡</span>
+                            <span>支持多模态输入 · 实时打断 · 根据AI引导回答或随时提问</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 预览卡片 -->
+    <div class="preview-card" id="previewCard">
+        <div class="card-close" onclick="hideCard()">✕</div>
+        <div class="card-title" id="cardTitle">函数的单调性</div>
+        <div class="card-subtitle" id="cardSubtitle">增函数与减函数</div>
+        <div class="card-meta">
+            <div class="card-meta-item">📖 讲解 10分钟</div>
+            <div class="card-meta-item">✏️ 练习 15分钟</div>
+        </div>
+        <button class="card-btn card-btn-primary" onclick="hideCard(); switchPage('classroom')">进入虚拟课堂</button>
+        <button class="card-btn card-btn-secondary">苏格拉底练习</button>
+    </div>
+
+    <!-- GeoGebra 弹窗 -->
+    <div class="geogebra-popup" id="geogebraPopup">
+        <div class="geogebra-popup-content">
+            <div class="geogebra-popup-header">
+                <span class="geogebra-popup-title">📐 GeoGebra 数学工具</span>
+                <button class="geogebra-popup-close" onclick="hideGeogebraPopup()">✕</button>
+            </div>
+            <div class="geogebra-popup-body">
+                <div class="geogebra-placeholder">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📐</div>
+                    <div style="font-size: 14px; color: #64748B;">GeoGebra 画板</div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">点击上方工具开始绘图</div>
+                </div>
+                <div class="geogebra-tools">
+                    <button class="geogebra-tool-btn active">函数图像</button>
+                    <button class="geogebra-tool-btn">几何图形</button>
+                    <button class="geogebra-tool-btn">Venn图</button>
+                    <button class="geogebra-tool-btn">数轴区间</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 知识点溯源弹窗 -->
+    <div class="knowledge-popup" id="knowledgePopup">
+        <div class="knowledge-popup-content">
+            <div class="knowledge-popup-header">
+                <span class="knowledge-popup-title">🔍 知识点溯源</span>
+                <button class="knowledge-popup-close" onclick="hideKnowledgePopup()">✕</button>
+            </div>
+            <div class="knowledge-popup-body">
+                <div class="knowledge-path">
+                    <div class="knowledge-node">
+                        <div class="knowledge-node-dot"></div>
+                        <div class="knowledge-node-content">
+                            <div class="knowledge-node-title">一元二次方程</div>
+                            <div class="knowledge-node-desc">标准形式 ax² + bx + c = 0</div>
+                        </div>
+                    </div>
+                    <div class="knowledge-line"></div>
+                    <div class="knowledge-node">
+                        <div class="knowledge-node-dot"></div>
+                        <div class="knowledge-node-content">
+                            <div class="knowledge-node-title">因式分解法</div>
+                            <div class="knowledge-node-desc">将方程化为 (x-x₁)(x-x₂) = 0</div>
+                        </div>
+                    </div>
+                    <div class="knowledge-line"></div>
+                    <div class="knowledge-node">
+                        <div class="knowledge-node-dot"></div>
+                        <div class="knowledge-node-content">
+                            <div class="knowledge-node-title">求根公式</div>
+                            <div class="knowledge-node-desc">x = (-b ± √(b²-4ac)) / 2a</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="knowledge-summary">
+                    <div style="font-size: 13px; font-weight: 600; color: #1A1A2E; margin-bottom: 8px;">解题路径</div>
+                    <div style="font-size: 12px; color: #64748B; line-height: 1.8;">
+                        本题使用因式分解法：<br>
+                        1. 确定 a=1, b=-5, c=6<br>
+                        2. 找两个数积为6、和为-5<br>
+                        3. 这两个数是-2和-3<br>
+                        4. 得 (x-2)(x-3)=0
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('expanded');
+            document.body.classList.toggle('expanded');
+        }
+
+        function toggleSearch() {
+            document.getElementById('searchWrapper').classList.toggle('show');
+            document.querySelector('.search-trigger').classList.toggle('hidden');
+            if (document.getElementById('searchWrapper').classList.contains('show')) {
+                setTimeout(() => document.getElementById('searchInput').focus(), 100);
+            }
+        }
+
+        function switchPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const target = document.getElementById('page-' + pageName);
+            if (target) {
+                target.classList.add('active');
+            }
+            if (event && event.target && event.target.closest('.nav-item')) {
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                event.target.closest('.nav-item').classList.add('active');
+            }
+        }
+
+        function showCard(data) {
+            document.getElementById('cardTitle').textContent = data.name;
+            document.getElementById('cardSubtitle').textContent = data.subtitle || '';
+            document.getElementById('previewCard').classList.add('show');
+        }
+
+        function hideCard() {
+            document.getElementById('previewCard').classList.remove('show');
+        }
+
+        function toggleChapter(card) {
+            card.classList.toggle('expanded');
+        }
+
+        function switchClassMode(mode, btn) {
+            document.querySelectorAll('.class-mode-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('classGraphMode').style.display = mode === 'graph' ? 'flex' : 'none';
+            document.getElementById('classPptMode').style.display = mode === 'ppt' ? 'flex' : 'none';
+            document.getElementById('classExerciseMode').style.display = mode === 'exercise' ? 'flex' : 'none';
+        }
+
+        function sendClassMessage() {
+            const input = document.getElementById('classUserInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chat = document.getElementById('classTutorChat');
+            const userBubble = document.createElement('div');
+            userBubble.className = 'class-chat-bubble user';
+            userBubble.textContent = message;
+            chat.appendChild(userBubble);
+
+            input.value = '';
+            chat.scrollTop = chat.scrollHeight;
+
+            setTimeout(() => {
+                const aiBubble = document.createElement('div');
+                aiBubble.className = 'class-chat-bubble ai';
+                aiBubble.innerHTML = '很好的问题！让我为你解答～';
+                chat.appendChild(aiBubble);
+                chat.scrollTop = chat.scrollHeight;
+            }, 800);
+        }
+
+        function showGeogebraPopup() {
+            document.getElementById('geogebraPopup').classList.add('show');
+        }
+
+        function hideGeogebraPopup() {
+            document.getElementById('geogebraPopup').classList.remove('show');
+        }
+
+        function showKnowledgePopup() {
+            document.getElementById('knowledgePopup').classList.add('show');
+        }
+
+        function hideKnowledgePopup() {
+            document.getElementById('knowledgePopup').classList.remove('show');
+        }
+
+        // ========== WebSocket 连接 ==========
+        let ws = null;
+        let currentSessionId = null;
+        let isProcessing = false;
+
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function connectWebSocket() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                return;
+            }
+
+            currentSessionId = generateSessionId();
+            const wsUrl = 'ws://127.0.0.1:8766/ws/chat/' + currentSessionId;
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                console.log('WebSocket 连接成功');
+            };
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket 错误:', error);
+            };
+
+            ws.onclose = function() {
+                console.log('WebSocket 连接关闭');
+            };
+        }
+
+        function disconnectWebSocket() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function handleWebSocketMessage(data) {
+            const chat = document.querySelector('.tutoring-chat-messages');
+
+            switch(data.type) {
+                case 'processing_start':
+                    // 显示处理中提示
+                    showProcessingIndicator(data.hint);
+                    break;
+
+                case 'ai_content':
+                    // AI 生成的内容（问题）
+                    if (data.is_question) {
+                        const aiBubble = document.createElement('div');
+                        aiBubble.className = 'tutoring-msg ai';
+                        aiBubble.innerHTML = `<div class="tutoring-msg-avatar">👩‍🏫</div><div><div class="tutoring-msg-content">${data.content}</div><div class="tutoring-msg-time">刚刚</div></div>`;
+                        chat.appendChild(aiBubble);
+                        chat.scrollTop = chat.scrollHeight;
+                    }
+                    break;
+
+                case 'ai_response':
+                    // AI 最终回复
+                    const aiBubble2 = document.createElement('div');
+                    aiBubble2.className = 'tutoring-msg ai';
+                    aiBubble2.innerHTML = `<div class="tutoring-msg-avatar">👩‍🏫</div><div><div class="tutoring-msg-content">${data.content}</div><div class="tutoring-msg-time">刚刚</div></div>`;
+                    chat.appendChild(aiBubble2);
+                    chat.scrollTop = chat.scrollHeight;
+                    break;
+
+                case 'apos_changed':
+                    // APOS 状态变化提示
+                    showAposChangeToast(data.old_level, data.new_level);
+                    break;
+
+                case 'schema_completed':
+                    // Schema 完成，显示分流选择
+                    showSchemaCompletionPopup(data.topic, data.options);
+                    break;
+
+                case 'processing_end':
+                    // 处理完成
+                    hideProcessingIndicator();
+                    isProcessing = false;
+                    break;
+            }
+        }
+
+        function showProcessingIndicator(hint) {
+            // 如果已有 indicator，先移除
+            hideProcessingIndicator();
+
+            const indicator = document.createElement('div');
+            indicator.id = 'processing-indicator';
+            indicator.className = 'tutoring-processing-indicator';
+            indicator.innerHTML = `<span class="processing-dot"></span><span class="processing-text">${hint || '处理中...'}</span>`;
+
+            // 添加到聊天区域底部
+            const chatArea = document.querySelector('.tutoring-chat-messages');
+            chatArea.appendChild(indicator);
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            isProcessing = true;
+        }
+
+        function hideProcessingIndicator() {
+            const indicator = document.getElementById('processing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function showAposChangeToast(oldLevel, newLevel) {
+            // 简单的 toast 提示
+            const toast = document.createElement('div');
+            toast.className = 'tutoring-toast';
+            toast.innerHTML = `🎉 学情提升：${oldLevel} → ${newLevel}`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }, 100);
+        }
+
+        function showSchemaCompletionPopup(topic, options) {
+            const popup = document.createElement('div');
+            popup.className = 'schema-popup';
+            popup.innerHTML = `
+                <div class="schema-popup-content">
+                    <div class="schema-popup-header">
+                        <span>🎉 已掌握「${topic}」</span>
+                        <button onclick="this.closest('.schema-popup').remove()">✕</button>
+                    </div>
+                    <div class="schema-popup-body">
+                        <p>请选择你的下一步：</p>
+                        <div class="schema-options">
+                            ${options.map(opt => `
+                                <button class="schema-option-btn" onclick="handleSchemaChoice('${opt.id}')">${opt.label}</button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(popup);
+            popup.classList.add('show');
+        }
+
+        function handleSchemaChoice(choice) {
+            // 关闭弹窗
+            const popup = document.querySelector('.schema-popup');
+            if (popup) popup.remove();
+
+            // 发送选择到 WebSocket
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'schema_choice',
+                    choice: choice
+                }));
+            }
+        }
+
+        function sendTutoringMessage() {
+            const input = document.getElementById('tutoringInput');
+            const message = input.value.trim();
+            if (!message || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+            // 添加用户消息到聊天区域
+            const chat = document.querySelector('.tutoring-chat-messages');
+            const userBubble = document.createElement('div');
+            userBubble.className = 'tutoring-msg user';
+            userBubble.innerHTML = `<div><div class="tutoring-msg-content">${message}</div><div class="tutoring-msg-time">刚刚</div></div>`;
+            chat.appendChild(userBubble);
+
+            input.value = '';
+            chat.scrollTop = chat.scrollHeight;
+
+            // 发送消息到 WebSocket
+            ws.send(JSON.stringify({
+                type: 'user_message',
+                content: message
+            }));
+        }
+
+        // 页面切换时连接/断开 WebSocket
+        const originalSwitchPage = switchPage;
+        switchPage = function(pageName) {
+            if (pageName === 'tutoring') {
+                // 进入智能辅导页面，连接 WebSocket
+                setTimeout(connectWebSocket, 100);
+            } else {
+                // 离开智能辅导页面，断开 WebSocket
+                disconnectWebSocket();
+            }
+            originalSwitchPage(pageName);
+        };
+
+        // 拖拽功能
+        const classPointP = document.getElementById('classPointP');
+        const classCoord = document.getElementById('classCoord');
+        let classDragging = false;
+        let classOffsetX, classOffsetY;
+
+        if (classPointP) {
+            classPointP.addEventListener('mousedown', (e) => {
+                classDragging = true;
+                const rect = classPointP.getBoundingClientRect();
+                classOffsetX = e.clientX - rect.left;
+                classOffsetY = e.clientY - rect.top;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!classDragging || !classCoord) return;
+
+                const coordRect = classCoord.getBoundingClientRect();
+                let x = e.clientX - coordRect.left - classOffsetX;
+                let y = e.clientY - coordRect.top - classOffsetY;
+
+                x = Math.max(10, Math.min(coordRect.width - 10, x));
+                y = Math.max(10, Math.min(coordRect.height - 10, y));
+
+                classPointP.style.left = x + 'px';
+                classPointP.style.top = y + 'px';
+
+                const centerX = coordRect.width / 2;
+                const centerY = coordRect.height / 2;
+                const symX = centerX - (x - centerX);
+                const symY = centerY - (y - centerY);
+
+                const classPointP2 = document.getElementById('classPointP2');
+                if (classPointP2) {
+                    classPointP2.style.left = symX + 'px';
+                    classPointP2.style.top = symY + 'px';
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                classDragging = false;
+            });
+        }
+
+        // 工具按钮
+        document.querySelectorAll('.class-tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.class-toolbar').querySelectorAll('.class-tool-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

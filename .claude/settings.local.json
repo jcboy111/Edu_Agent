@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o \"d:/VSwork/Edu_Agent/node_design.jpg\" \"https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/ccv2%2F2026-04-28%2FMiniMax-M2.7%2F2032037020183826464%2Ffd23cdb151f1fc0b4bca4a79e42615523b49ab030b8d1d45d27af7c57b1d1049..jpeg?Expires=1777403944&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=1LEu30VzGLAe5PArx5xebST9WYk%3D\")",
+      "Bash(python -c \"from PIL import Image; img = Image.open\\('d:/VSwork/Edu_Agent/design_pic/index.jpg'\\); print\\(f'Size: {img.size}, Format: {img.format}'\\)\")",
+      "Bash(xxd)",
+      "Bash(file d:/VSwork/Edu_Agent/design_pic/*)",
+      "Bash(curl -s -o \"d:/VSwork/Edu_Agent/new_style.png\" \"https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/ccv2%2F2026-04-28%2FMiniMax-M2.7%2F2032037020183826464%2F2cbb67a64dfe030b16e1671d653450881d95dca7b8c0594bbb1493bbe63d7849..png?Expires=1777404449&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=ZaLs2ms%2FO%2B8VKI77rPxiXI4oVT8%3D\")",
+      "WebFetch(domain:platform.minimaxi.com)"
+    ]
+  }
+}

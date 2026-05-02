@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI数学智能导师</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #FFFFFF;
+            color: #1A1A2E;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* 左侧导航栏 */
+        .sidebar {
+            width: 72px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #FFFFFF;
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 0;
+            z-index: 100;
+            transition: width 0.3s ease;
+            overflow: hidden;
+        }
+
+        .sidebar.expanded {
+            width: 220px;
+            align-items: flex-start;
+            padding: 24px 16px;
+        }
+
+        .sidebar-header {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(74, 144, 217, 0.25);
+        }
+
+        .toggle-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #999;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(74, 144, 217, 0.1);
+            color: #4A90D9;
+        }
+
+        .sidebar-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1A1A2E;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            text-align: center;
+        }
+
+        .sidebar.expanded .sidebar-title {
+            opacity: 1;
+        }
+
+        .nav-items {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item {
+            width: 100%;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px;
+            border-radius: 12px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background: rgba(74, 144, 217, 0.08);
+            color: #4A90D9;
+        }
+
+        .nav-item.active {
+            background: rgba(74, 144, 217, 0.1);
+            color: #4A90D9;
+        }
+
+        .nav-icon {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nav-text {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .sidebar.expanded .nav-text {
+            opacity: 1;
+        }
+
+        .nav-bottom {
+            margin-top: auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* 主内容区 */
+        .main {
+            margin-left: 72px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        body.expanded .main {
+            margin-left: 220px;
+        }
+
+        /* 顶部栏 */
+        .topbar {
+            height: 64px;
+            padding: 0 64px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .chapter-select {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #F7F8FA;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .chapter-select:hover {
+            background: #EEF1F5;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* 英雄区域 */
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 64px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(74, 144, 217, 0.08);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #4A90D9;
+            margin-bottom: 32px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-title {
+            font-size: 56px;
+            font-weight: 700;
+            color: #1A1A2E;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+
+        .hero-title .gradient {
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: #666;
+            max-width: 480px;
+            line-height: 1.7;
+            margin-bottom: 48px;
+            font-weight: 400;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 36px;
+            background: linear-gradient(135deg, #4A90D9, #667eea);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            box-shadow: 0 4px 20px rgba(74, 144, 217, 0.3);
+            text-decoration: none;
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(74, 144, 217, 0.4);
+        }
+
+        /* 功能入口 */
+        .features {
+            display: flex;
+            gap: 16px;
+            margin-top: 64px;
+        }
+
+        .feature-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            background: #F7F8FA;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #1A1A2E;
+        }
+
+        .feature-card:hover {
+            background: #EEF1F5;
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            font-size: 18px;
+        }
+
+        .feature-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 装饰元素 */
+        .decoration {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .dec-1 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(74, 144, 217, 0.06) 0%, transparent 70%);
+            top: -100px;
+            right: -100px;
+        }
+
+        .dec-2 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+            bottom: -50px;
+            left: 200px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 左侧导航 -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">🧮</div>
+            <div class="toggle-btn" onclick="toggleSidebar()" title="展开/收起导航栏">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </div>
+            <span class="sidebar-title">AI数学导师</span>
+        </div>
+
+        <div class="nav-items">
+            <a href="#" class="nav-item active">
+                <div class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                </div>
+                <span class="nav-text">首页</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <div class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                </div>
+                <span class="nav-text">章节学习</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <div class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <span class="nav-text">定制微课</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <div class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </div>
+                <span class="nav-text">题型练习</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <div class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                </div>
+                <span class="nav-text">学习报告</span>
+            </a>
+        </div>
+
+        <div class="nav-bottom">
+            <a href="#" class="nav-item">
+                <div class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </div>
+                <span class="nav-text">设置</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main">
+        <!-- 顶部栏 -->
+        <header class="topbar">
+            <button class="chapter-select">
+                <span>第三章 函数的概念与性质</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+            <div class="user-avatar">学</div>
+        </header>
+
+        <!-- 英雄区域 -->
+        <section class="hero">
+            <div class="hero-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                AI 驱动 · 个性化学习
+            </div>
+
+            <h1 class="hero-title">
+                <span class="gradient">AI 数学</span>智能导师
+            </h1>
+
+            <p class="hero-subtitle">
+                让每个学生都能拥有专属的数学学习伙伴<br>
+                互动式微课堂 · 动态几何画板 · 个性化学习路径
+            </p>
+
+            <a href="#" class="hero-cta">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                开始学习
+            </a>
+
+            <div class="features">
+                <a href="#" class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <span class="feature-text">章节学习</span>
+                </a>
+                <a href="#" class="feature-card">
+                    <div class="feature-icon">✍️</div>
+                    <span class="feature-text">题型练习</span>
+                </a>
+                <a href="#" class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <span class="feature-text">学习报告</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- 装饰 -->
+        <div class="decoration dec-1"></div>
+        <div class="decoration dec-2"></div>
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const body = document.body;
+            sidebar.classList.toggle('expanded');
+            body.classList.toggle('expanded');
+        }
+    </script>
+</body>
+</html>

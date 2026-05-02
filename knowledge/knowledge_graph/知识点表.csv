@@ -1,0 +1,27 @@
+# 知识点元数据表
+# 字段说明：
+#   knowledge_id: 知识点唯一标识
+#   chapter: 所属章节
+#   name: 知识点名称
+#   default_apos: 默认APOS阶段 (Action/Process/Object/Schema)
+#   difficulty: 难度等级 (1-5)
+#   md_file: 对应的markdown文件路径
+
+knowledge_id,chapter,name,default_apos,difficulty,md_file
+K101,1.1,集合的概念,Action,1,1.1_集合的概念.md
+K102,1.1,集合的表示方法,Action,1,1.1_集合的概念.md
+K103,1.1,常用数集符号,Action,1,1.1_集合的概念.md
+K104,1.2,子集,Action,2,1.2_集合间的基本关系.md
+K105,1.2,真子集,Action,2,1.2_集合间的基本关系.md
+K106,1.2,集合相等,Process,2,1.2_集合间的基本关系.md
+K107,1.2,空集,Process,2,1.2_集合间的基本关系.md
+K108,1.3,并集,Action,2,1.3_集合的基本运算.md
+K109,1.3,交集,Action,2,1.3_集合的基本运算.md
+K110,1.3,补集,Action,3,1.3_集合的基本运算.md
+K111,1.3,运算律,Process,3,1.3_集合的基本运算.md
+K112,1.4,充分条件,Action,2,1.4_充分条件与必要条件.md
+K113,1.4,必要条件,Action,2,1.4_充分条件与必要条件.md
+K114,1.4,充要条件,Process,3,1.4_充分条件与必要条件.md
+K115,1.5,全称量词,Action,2,1.5_全称量词与存在量词.md
+K116,1.5,存在量词,Action,2,1.5_全称量词与存在量词.md
+K117,1.5,命题否定,Process,3,1.5_全称量词与存在量词.md

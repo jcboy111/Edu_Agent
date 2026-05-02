@@ -1,0 +1,64 @@
+{
+  "奇偶性": {
+    "description": "判断函数的奇偶性",
+    "steps": [
+      "第一步：求定义域，判断是否关于原点对称",
+      "第二步：计算 f(-x)，并化简",
+      "第三步：比较 f(-x) 与 f(x) 的关系",
+      "第四步：根据关系判断奇偶性"
+    ],
+    "related_tools": ["render_graph", "show_derivation"],
+    "core_abilities": ["逻辑推理", "数学运算"]
+  },
+  "函数的单调性": {
+    "description": "判断函数的单调性",
+    "steps": [
+      "第一步：求导数",
+      "第二步：判断导数正负",
+      "第三步：根据导数正负判断增减性"
+    ],
+    "related_tools": ["render_graph"],
+    "core_abilities": ["逻辑推理", "直观想象"]
+  },
+  "二次函数图像与性质": {
+    "description": "二次函数的图像与性质",
+    "steps": [
+      "第一步：确定开口方向（a的正负）",
+      "第二步：求顶点坐标",
+      "第三步：求对称轴",
+      "第四步：求与坐标轴交点"
+    ],
+    "related_tools": ["render_graph", "animate"],
+    "core_abilities": ["直观想象", "数学运算"]
+  },
+  "集合的概念": {
+    "description": "集合的基本概念",
+    "steps": [
+      "第一步：理解集合的定义",
+      "第二步：掌握集合的表示方法",
+      "第三步：区分元素与集合的关系"
+    ],
+    "related_tools": ["show_card"],
+    "core_abilities": ["数学抽象"]
+  },
+  "集合间的基本关系": {
+    "description": "子集、真子集、相等",
+    "steps": [
+      "第一步：判断元素是否属于集合",
+      "第二步：判断子集关系",
+      "第三步：判断真子集关系"
+    ],
+    "related_tools": ["render_graph"],
+    "core_abilities": ["逻辑推理", "数学抽象"]
+  },
+  "集合的基本运算": {
+    "description": "交集、并集、补集",
+    "steps": [
+      "第一步：理解各种运算的定义",
+      "第二步：画数轴或Venn图辅助",
+      "第三步：进行运算"
+    ],
+    "related_tools": ["render_graph", "animate"],
+    "core_abilities": ["逻辑推理", "直观想象"]
+  }
+}

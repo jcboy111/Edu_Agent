@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python demo_rag.py)",
+      "Bash(python -c ' *)",
+      "Bash(streamlit run *)",
+      "Bash(tasklist)",
+      "Bash(python -m streamlit run app.py --server.port 8501 --server.headless true)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8501)",
+      "Bash(findstr /i \"streamlit\")",
+      "Bash(python -m streamlit run app.py)",
+      "Bash(start d:/VSwork/Edu_Agent/index.html)",
+      "Bash(curl -s \"http://localhost:8501\")",
+      "Read(//d/VSwork/pic_resource/**)",
+      "Bash(curl -s \"file:///d:/VSwork/Edu_Agent/pic_resource/button1.png\")",
+      "Bash(pip show *)",
+      "Bash(python test_agent.py)",
+      "Bash(curl -s --max-time 30 \"https://api.deepseek.com/v1/models\" -H \"Authorization: Bearer sk-47dc968380d640098e3e0afaf067b35f\")"
+    ]
+  }
+}

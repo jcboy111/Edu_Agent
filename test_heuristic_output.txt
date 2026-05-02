@@ -1,0 +1,8 @@
+返回的 current_question:
+> 你在生活中见过像蝴蝶、雪花这样的对称图案吗？如果把它们的中间画一条线，左右两边像是在玩"镜像游戏"
+
+node_history:
+['heuristic_teaching']
+
+pending_tool:
+None

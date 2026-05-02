@@ -1,0 +1,13 @@
+# APOS阶段定义表
+# 字段说明：
+#   apos_id: APOS阶段ID
+#   stage: 阶段 (Action/Process/Object/Schema)
+#   description: 阶段描述
+#   teaching_strategy: 教学策略建议
+#   question_template: 引导提问模板
+
+apos_id,stage,description,teaching_strategy,question_template
+A001,Action,学生能按步骤执行，能模仿例题进行计算,给出明确步骤，引导模仿练习,你能告诉我按照什么步骤做？
+A002,Process,学生理解本质原理，能解释为什么,用苏格拉底式提问引导抽象,你能解释一下为什么这样做吗？
+A003,Object,学生能把知识点当整体使用，能迁移,设计变式练习，培养灵活性,如果换一种问法，你会做吗？
+A004,Schema,学生能综合应用，解决新问题,综合性问题，跨知识点应用,这个问题和我们之前学的有什么联系？

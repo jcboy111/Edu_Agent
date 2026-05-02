@@ -1,0 +1,62 @@
+[
+  {
+    "question": "奇函数是什么",
+    "messages": [
+      "---\n没关系，你问这个问题很正常！奇函数听起来很陌生，其实它就在我们身边。\n## 生活里的\"奇函数\"\n你有没有注意过**折纸**？把一张纸沿中线对折，左边和右边能完全重合——那是**偶函数**的对称。\n但如果像扭麻花一样，**左边转到左边、右边转到右边**，方向相反但形状一样——这就有点像奇函数了！\n## 数学里的定义\n奇函数的关键特征是：\n> **f(-x) = -f(x)**\n用图像看就是：**关于原点对称**。\n举个具体例子，f(x) = x³\n- f(2) = 8\n- f(-2) = -8\n你能发现吗？取相反数，函数值也变成相反数。这就是奇函数的\"DNA\"。\n---\n💡 **想一想**：你身边有没有\"一边正、一边负，完全对称\"的现象？比如荡秋千时左边的最高点和右边的最高点？"
+    ],
+    "apos_level": "action",
+    "teaching_strategy": "socratic",
+    "next_node": "END",
+    "node_history": [
+      "supervisor",
+      "learning_diagnosis",
+      "supervisor",
+      "emotion_detection",
+      "supervisor",
+      "heuristic_teaching",
+      "supervisor",
+      "response",
+      "supervisor"
+    ]
+  },
+  {
+    "question": "奇函数有什么性质",
+    "messages": [
+      "你提的这个问题很好！看来你对奇函数产生了兴趣。\n让我来具体说说奇函数的一个重要性质：**f(-x) = -f(x)**\n举例子来说，比如我们看函数 f(x) = x³：\n- 当 x = 2 时，f(2) = 2³ = 8\n- 当 x = -2 时，f(-2) = (-2)³ = -8\n你发现了吗？f(-2) = -8 = -f(2)\n**这就是奇函数的核心性质：输入互为相反数的两个值，它们的函数值也互为相反数。**\n另一个直观的特征是：从图像上看，奇函数关于**原点对称**。你可以试着画一下 f(x) = x³ 的图像，会发现右边的\"尾巴\"和左边的\"尾巴\"是关于原点对称的。\n---\n观察一下 f(x) = x³ 的图像，你能说出当 x = 1 时 f(x) 等于多少吗？那 x = -1 时呢？这样对比一下，你能更深刻地感受到这个规律。"
+    ],
+    "apos_level": "action",
+    "teaching_strategy": "socratic",
+    "next_node": "END",
+    "node_history": [
+      "supervisor",
+      "learning_diagnosis",
+      "supervisor",
+      "emotion_detection",
+      "supervisor",
+      "heuristic_teaching",
+      "supervisor",
+      "response",
+      "supervisor"
+    ]
+  },
+  {
+    "question": "怎么判断函数是奇函数",
+    "messages": [
+      "你观察得很仔细呢！好问题！\n---\n## 什么是奇函数？\n其实，判断一个函数是不是奇函数，有一个**核心标准**：\n> 对于函数 f(x)，如果 **f(-x) = -f(x)** 恒成立，那么 f(x) 就是**奇函数**。\n这个等式看起来有点抽象，让我用你刚才观察的 **f(x) = x³** 来具体说明：\n---\n## 具体验证一下\n拿几个点来算算看：\n| x | f(x) = x³ | f(-x) | -f(x) |\n|---|-----------|-------|-------|\n| 1 | 1 | -1 | -1 ✓ |\n| 2 | 8 | -8 | -8 ✓ |\n| -3 | -27 | 27 | 27 ✓ |\n看，**f(-x) = -f(x)** 这个条件都满足！所以 **f(x) = x³ 是奇函数**。\n---\n## 图象上的\"标志\"\n回到你观察到的图像特点——**关于原点对称**，这正是奇函数在图象上的直观表现：\n- 左边负半轴的\"钩子\"镜像到右边正半轴\n- 原点就像一个\"旋转中心\"\n---\n## 你能自己试试吗？\n现在你来验证一下，**f(x) = x**（一次函数 y=x）是不是奇函数？\n只要算一算 **f(-x) = ?** 然后和 **-f(x)** 比一比就行了~"
+    ],
+    "apos_level": "action",
+    "teaching_strategy": "socratic",
+    "next_node": "END",
+    "node_history": [
+      "supervisor",
+      "learning_diagnosis",
+      "supervisor",
+      "emotion_detection",
+      "supervisor",
+      "heuristic_teaching",
+      "supervisor",
+      "response",
+      "supervisor"
+    ]
+  }
+]
