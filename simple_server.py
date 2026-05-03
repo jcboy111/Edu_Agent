@@ -2,15 +2,19 @@
 """
 简化版对话服务器
 直接对话，无复杂 Agent 逻辑
+知识图谱集成：追踪学习进度，推荐学习路径
 """
 import asyncio
 import json
 import time
+import re
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
+
+from knowledge import KnowledgeGraph
 
 # LLM
 llm = ChatOpenAI(
@@ -20,6 +24,9 @@ llm = ChatOpenAI(
     max_tokens=500,
     timeout=30,
 )
+
+# 知识图谱
+kg = KnowledgeGraph()
 
 # 系统提示
 SYSTEM_PROMPT = """你是一个耐心的数学老师，用苏格拉底式提问法教学生理解数学概念。
@@ -32,24 +39,66 @@ SYSTEM_PROMPT = """你是一个耐心的数学老师，用苏格拉底式提问�
 
 app = FastAPI()
 
+
 # 连接管理
 class ConnectionManager:
     def __init__(self):
         self.active_connections: dict[str, WebSocket] = {}
         self.histories: dict[str, list] = {}
+        self.learned_points: dict[str, list] = {}
 
     async def connect(self, ws: WebSocket, session_id: str):
         await ws.accept()
         self.active_connections[session_id] = ws
         self.histories[session_id] = []
+        self.learned_points[session_id] = []
 
     def disconnect(self, session_id: str):
         if session_id in self.active_connections:
             del self.active_connections[session_id]
         if session_id in self.histories:
             del self.histories[session_id]
+        if session_id in self.learned_points:
+            del self.learned_points[session_id]
+
+    def mark_learned(self, session_id: str, point_id: str):
+        if point_id not in self.learned_points.get(session_id, []):
+            self.learned_points.setdefault(session_id, []).append(point_id)
+
+    def get_learning_progress(self, session_id: str) -> dict:
+        learned = self.learned_points.get(session_id, [])
+        return {
+            "learned_count": len(learned),
+            "learned_points": learned,
+            "next_recommendation": kg.get_next_learning(learned)
+        }
+
 
 manager = ConnectionManager()
+
+
+def detect_knowledge_points(text: str, kg: KnowledgeGraph) -> list:
+    """根据用户输入检测涉及的知识点"""
+    detected = []
+    text_lower = text.lower()
+    for point in kg.data.get("knowledge_points", []):
+        for kw in point.get("keywords", []):
+            if kw.lower() in text_lower:
+                detected.append(point["id"])
+                break
+    return detected
+
+
+def clean_response(text: str) -> str:
+    """清理回复中的内部推理内容"""
+    text = re.sub(r'<think>.*?', '', text, flags=re.DOTALL)
+    skip_patterns = ["用户希望", "当前情境", "用户是", "当前话题", "APOS", "ZPD"]
+    for pattern in skip_patterns:
+        if pattern in text:
+            lines = text.split('\n')
+            text = '\n'.join([l for l in lines if pattern not in l])
+    return text.strip()
+
 
 @app.websocket("/ws/chat/{session_id}")
 async def websocket_chat(websocket: WebSocket, session_id: str):
@@ -64,17 +113,15 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
                 if not user_msg:
                     continue
 
-                # 发送思考提示
                 await websocket.send_json({
                     "type": "processing_start",
                     "node": "thinking",
                     "hint": "思考中..."
                 })
 
-                # 获取历史
                 history = manager.histories.get(session_id, [])
+                current_points = detect_knowledge_points(user_msg, kg)
 
-                # 构建消息
                 messages = [SystemMessage(content=SYSTEM_PROMPT)]
                 for h in history:
                     if h["role"] == "user":
@@ -82,35 +129,28 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
                     else:
                         messages.append(HumanMessage(content=h['content']))
 
-                # 如果第一条不是学生问的，先加一句引导
-                if not history:
-                    messages.append(HumanMessage(content=f"学生：{user_msg}"))
-                else:
-                    messages.append(HumanMessage(content=f"学生：{user_msg}"))
+                messages.append(HumanMessage(content=f"学生：{user_msg}"))
 
-                # 调用 LLM
                 response = llm.invoke(messages)
                 ai_reply = response.content.strip()
+                ai_reply = clean_response(ai_reply)
 
-                # 清理回复（移除内部推理）
-                if "<think>" in ai_reply:
-                    ai_reply = ai_reply.split("</think>")[-1].strip()
+                manager.histories[session_id].append({"role": "user", "content": user_msg})
+                manager.histories[session_id].append({"role": "assistant", "content": ai_reply})
 
-                # 更新历史
-                if not history:
-                    manager.histories[session_id] = [
-                        {"role": "user", "content": user_msg},
-                        {"role": "assistant", "content": ai_reply}
-                    ]
-                else:
-                    manager.histories[session_id].append({"role": "user", "content": user_msg})
-                    manager.histories[session_id].append({"role": "assistant", "content": ai_reply})
+                for point_id in current_points:
+                    manager.mark_learned(session_id, point_id)
 
-                # 发送回复
                 await websocket.send_json({
                     "type": "ai_content",
                     "content": ai_reply,
                     "is_question": True
+                })
+
+                progress = manager.get_learning_progress(session_id)
+                await websocket.send_json({
+                    "type": "learning_progress",
+                    "progress": progress
                 })
 
                 await websocket.send_json({"type": "processing_end"})
@@ -121,9 +161,11 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
         print(f"Error: {e}")
         manager.disconnect(session_id)
 
+
 @app.get("/")
 async def root():
     return {"service": "Simple Chat", "websocket": "/ws/chat/{session_id}"}
+
 
 if __name__ == "__main__":
     import uvicorn

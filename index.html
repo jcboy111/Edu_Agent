@@ -2461,6 +2461,11 @@
                     showSchemaCompletionPopup(data.topic, data.options);
                     break;
 
+                case 'learning_progress':
+                    // 学习进度更新
+                    updateLearningProgress(data.progress);
+                    break;
+
                 case 'processing_end':
                     // 处理完成
                     hideProcessingIndicator();
@@ -2543,6 +2548,23 @@
                     type: 'schema_choice',
                     choice: choice
                 }));
+            }
+        }
+
+        function updateLearningProgress(progress) {
+            // 更新学习进度显示
+            const progressData = progress;
+            console.log('学习进度:', progressData);
+
+            // 如果有已学知识点显示
+            if (progressData.learned_points && progressData.learned_points.length > 0) {
+                // 可以在界面上显示已学知识点数量
+                const learnedCount = progressData.learned_count;
+                // 显示学习推荐
+                if (progressData.next_recommendation) {
+                    const next = progressData.next_recommendation;
+                    console.log('推荐学习:', next.topic, '-', next.description);
+                }
             }
         }
 
