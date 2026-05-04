@@ -1029,6 +1029,7 @@
 
         .tutoring-info {
             flex: 1;
+            min-width: 0;
         }
 
         .tutoring-name {
@@ -1067,6 +1068,53 @@
             background: white;
             color: #4A90D9;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tutoring-progress-section {
+            margin-left: auto;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            min-width: 140px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .progress-title {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .progress-count {
+            font-size: 11px;
+            font-weight: 600;
+            color: #4A90D9;
+        }
+
+        .progress-bar-container {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4A90D9, #667eea);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-detail {
+            margin-top: 6px;
+            font-size: 10px;
+            color: #94a3b8;
+            min-height: 14px;
         }
 
         .tutoring-chat-messages {
@@ -2163,6 +2211,16 @@
                             <button class="tutoring-mode-btn active">📝 文字</button>
                             <button class="tutoring-mode-btn">🎤 语音</button>
                         </div>
+                        <div class="tutoring-progress-section" id="progressSection">
+                            <div class="progress-header">
+                                <span class="progress-title">📊 学习进度</span>
+                                <span class="progress-count" id="progressCount">0/15</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                            </div>
+                            <div class="progress-detail" id="progressDetail"></div>
+                        </div>
                     </div>
 
                     <div class="tutoring-chat-messages">
@@ -2552,18 +2610,26 @@
         }
 
         function updateLearningProgress(progress) {
-            // 更新学习进度显示
-            const progressData = progress;
-            console.log('学习进度:', progressData);
+            const learnedCount = progress.learned_count || 0;
+            const learnedPoints = progress.learned_points || [];
+            const nextRec = progress.next_recommendation;
 
-            // 如果有已学知识点显示
-            if (progressData.learned_points && progressData.learned_points.length > 0) {
-                // 可以在界面上显示已学知识点数量
-                const learnedCount = progressData.learned_count;
-                // 显示学习推荐
-                if (progressData.next_recommendation) {
-                    const next = progressData.next_recommendation;
-                    console.log('推荐学习:', next.topic, '-', next.description);
+            // 更新进度显示
+            const totalPoints = 15; // 第三章共15个知识点
+            const countEl = document.getElementById('progressCount');
+            const barEl = document.getElementById('progressBar');
+            const detailEl = document.getElementById('progressDetail');
+
+            if (countEl) countEl.textContent = `${learnedCount}/${totalPoints}`;
+            if (barEl) barEl.style.width = `${(learnedCount / totalPoints) * 100}%`;
+
+            if (detailEl) {
+                if (nextRec) {
+                    detailEl.textContent = `下一步: ${nextRec.topic}`;
+                } else if (learnedCount >= totalPoints) {
+                    detailEl.textContent = '本章已学完! 🎉';
+                } else {
+                    detailEl.textContent = '继续加油~';
                 }
             }
         }
