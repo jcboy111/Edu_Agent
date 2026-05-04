@@ -1128,53 +1128,6 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        .tutoring-progress-section {
-            margin-left: auto;
-            padding: 8px 12px;
-            background: #f8fafc;
-            border-radius: 8px;
-            min-width: 140px;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-
-        .progress-title {
-            font-size: 11px;
-            color: #64748b;
-        }
-
-        .progress-count {
-            font-size: 11px;
-            font-weight: 600;
-            color: #4A90D9;
-        }
-
-        .progress-bar-container {
-            height: 4px;
-            background: #e2e8f0;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #4A90D9, #667eea);
-            border-radius: 2px;
-            transition: width 0.3s ease;
-        }
-
-        .progress-detail {
-            margin-top: 6px;
-            font-size: 10px;
-            color: #94a3b8;
-            min-height: 14px;
-        }
-
         .tutoring-chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -2282,16 +2235,6 @@
                         <div class="tutoring-mode-toggle">
                             <button class="tutoring-mode-btn active">📝 文字</button>
                             <button class="tutoring-mode-btn">🎤 语音</button>
-                        </div>
-                        <div class="tutoring-progress-section" id="progressSection">
-                            <div class="progress-header">
-                                <span class="progress-title">📊 学习进度</span>
-                                <span class="progress-count" id="progressCount">0/15</span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-                            </div>
-                            <div class="progress-detail" id="progressDetail"></div>
                         </div>
                     </div>
 
