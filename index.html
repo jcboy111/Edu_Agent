@@ -866,9 +866,15 @@
             display: flex;
             flex-direction: column;
             height: calc(100vh - 58px);
-            gap: 16px;
             padding: 16px;
             background: #F8FAFC;
+        }
+
+        .tutoring-content {
+            display: flex;
+            gap: 16px;
+            flex: 1;
+            min-height: 0;
         }
 
         /* 左侧工作区 */
@@ -2170,8 +2176,10 @@
                     <div class="progress-next" id="tutoringProgressNext">下一步：函数的概念</div>
                 </div>
 
-                <!-- 左侧工作区 -->
-                <div class="tutoring-workspace">
+                <!-- 工作区和聊天区 -->
+                <div class="tutoring-content">
+                    <!-- 左侧工作区 -->
+                    <div class="tutoring-workspace">
                     <!-- 学生问题卡片 -->
                     <div class="tutoring-question-card">
                         <div class="tutoring-question-label">📝 学生提问</div>
@@ -2325,6 +2333,7 @@
                             <span>支持多模态输入 · 实时打断 · 根据AI引导回答或随时提问</span>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
