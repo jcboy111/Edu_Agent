@@ -811,8 +811,60 @@
         .card-btn-secondary:hover { background: rgba(0,0,0,0.08); }
 
         /* ==================== 智能辅导页 ==================== */
+        /* 学习进度条 */
+        .tutoring-progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 12px;
+        }
+
+        .progress-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 100px;
+        }
+
+        .progress-label {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .progress-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .progress-track {
+            flex: 1;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4A90D9, #667eea);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-next {
+            font-size: 12px;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
         .tutoring-page {
             display: flex;
+            flex-direction: column;
             height: calc(100vh - 58px);
             gap: 16px;
             padding: 16px;
@@ -2106,6 +2158,18 @@
         <!-- 智能辅导页 -->
         <div class="page" id="page-tutoring">
             <div class="tutoring-page">
+                <!-- 学习进度条 -->
+                <div class="tutoring-progress-bar">
+                    <div class="progress-info">
+                        <span class="progress-label">📊 学习进度</span>
+                        <span class="progress-text" id="tutoringProgressText">已学 0/15 知识点</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="tutoringProgressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-next" id="tutoringProgressNext">下一步：函数的概念</div>
+                </div>
+
                 <!-- 左侧工作区 -->
                 <div class="tutoring-workspace">
                     <!-- 学生问题卡片 -->
@@ -2614,22 +2678,20 @@
             const learnedPoints = progress.learned_points || [];
             const nextRec = progress.next_recommendation;
 
-            // 更新进度显示
-            const totalPoints = 15; // 第三章共15个知识点
-            const countEl = document.getElementById('progressCount');
-            const barEl = document.getElementById('progressBar');
-            const detailEl = document.getElementById('progressDetail');
+            const totalPoints = 15;
+            const textEl = document.getElementById('tutoringProgressText');
+            const fillEl = document.getElementById('tutoringProgressFill');
+            const nextEl = document.getElementById('tutoringProgressNext');
 
-            if (countEl) countEl.textContent = `${learnedCount}/${totalPoints}`;
-            if (barEl) barEl.style.width = `${(learnedCount / totalPoints) * 100}%`;
-
-            if (detailEl) {
+            if (textEl) textEl.textContent = `已学 ${learnedCount}/${totalPoints} 知识点`;
+            if (fillEl) fillEl.style.width = `${(learnedCount / totalPoints) * 100}%`;
+            if (nextEl) {
                 if (nextRec) {
-                    detailEl.textContent = `下一步: ${nextRec.topic}`;
+                    nextEl.textContent = `下一步：${nextRec.topic}`;
                 } else if (learnedCount >= totalPoints) {
-                    detailEl.textContent = '本章已学完! 🎉';
+                    nextEl.textContent = '本章已学完! 🎉';
                 } else {
-                    detailEl.textContent = '继续加油~';
+                    nextEl.textContent = '继续加油~';
                 }
             }
         }
